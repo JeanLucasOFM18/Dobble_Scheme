@@ -180,7 +180,7 @@
 ; FUNCIÓN 9 (AVANZANDO)
 (define game
   (lambda (numPlayers cardsSet mode)
-    (list numPlayers cardsSet mode "No iniciado" '() 0 '() '())))
+    (list numPlayers cardsSet mode "No iniciado" 0 '() '())))
 
 ; GETTERS
 (define getNumPlayers
@@ -199,26 +199,22 @@
   (lambda (game)
     (car (cdr (cdr (cdr game))))))
 
-(define getTable
+(define getTurn
   (lambda (game)
     (car (cdr (cdr (cdr (cdr game)))))))
 
-(define getTurn
+(define getPlayers
   (lambda (game)
     (car (cdr (cdr (cdr (cdr (cdr game))))))))
 
-(define getPlayers
-  (lambda (game)
-    (car (cdr (cdr (cdr (cdr (cdr (cdr game)))))))))
-
 (define getScores
   (lambda (game)
-    (car (cdr (cdr (cdr (cdr (cdr (cdr (cdr game))))))))))
+    (car (cdr (cdr (cdr (cdr (cdr (cdr game)))))))))
 
 ; FUNCIÓN 10 (NO TERMINADA)
 (define stackMode
   (lambda (cardsSet)
-    (reverse (getDeck cardsSet))))
+    (list (car (reverse cardsSet))(car (cdr (reverse cardsSet))))))
 
 ; FUNCIÓN 11 (LISTA)
 (define register
@@ -226,7 +222,7 @@
     (if (equal? (length (getPlayers game)) (getNumPlayers game))
         game
         (if (equal? #t (verificarName user game (length (getPlayers game)) 0))
-            (cons (getNumPlayers game)(cons (getCardsSet game)(cons (getMode game)(cons (getStatus game)(cons (getTable game)(cons (getTurn game)(cons (agregateName user game)(list (agregateScore game)))))))))
+            (cons (getNumPlayers game)(cons (getCardsSet game)(cons (getMode game)(cons (getStatus game)(cons (getTurn game)(cons (agregateName user game)(list (agregateScore game))))))))
             game))))
 
 (define verificarName
@@ -253,15 +249,57 @@
 ; FUNCIÓN 13 PLAY
 (define play
   (lambda (game action)
-    (if (equal? action "null")
-        #t
-        (if (equal? action "spotit")
-            #t
-            (if (equal? action "pass")
+    (if (equal? action null)
+        ((getMode game) (car (getCardsSet game)))
+        (if (equal? action pass)
+            (pass (getTurn game) (getNumPlayers game))
+            (if (equal? action "finish")
                 #t
-                (if (equal? action "finish")
+                (if (equal? #t (verificarComparacion ((getMode game) (car (getCardsSet game))) action (car (cdr (getCardsSet game))) 0 0))
+                    (cons (getNumPlayers game)(cons (retirarCartas (car (getCardsSet game)))(cons (getMode game)(cons "En juego" (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game)(list (sumaPuntaje (getScores game)(getTurn game)(length (getScores game)) 0))))))))
+                    (cons (getNumPlayers game)(cons (devolverCartas ((getMode game) (car (getCardsSet game))) (car (getCardsSet game))) (cons (getMode game)(cons "En juego" (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game) (list (getScores game))))))))))))))
+
+(define spotit
+  (lambda (coincidencia)
+    coincidencia))
+
+(define verificarComparacion
+  (lambda (cartas coincidencia numE aux aux2)
+    (if (equal? aux numE)
+        #f
+        (if (equal? aux2 numE)
+            (verificarComparacion cartas coincidencia numE (+ aux 1) 0)
+            (if (equal? (getElemento (car cartas) aux)(getElemento (car (cdr cartas)) aux2))
+                (if (equal? (getElemento (car cartas) aux) coincidencia)
                     #t
-                    #f))))))
+                    #f)
+                (verificarComparacion cartas coincidencia numE aux (+ aux2 1)))))))
+
+(define retirarCartas
+  (lambda (cardsSet)
+    (reverse (cdr (cdr (reverse cardsSet))))))
+
+(define devolverCartas
+  (lambda (cartas cardsSet)
+    (append cartas (reverse (cdr (cdr (reverse cardsSet)))))))
+     
+(define sumaPuntaje
+  (lambda (puntajes turno largo aux)
+    (if (equal? largo aux)
+        '()
+        (if (equal? aux turno)
+            (cons (+ (getElemento puntajes aux) 2)(sumaPuntaje puntajes turno largo (+ aux 1)))
+            (cons (getElemento puntajes aux)(sumaPuntaje puntajes turno largo (+ aux 1)))))))
+
+(define pass
+  (lambda (turno num)
+    (if (equal? (+ turno 1) num)
+        0
+        (+ turno 1))))
+
+(define finish
+  (lambda ()
+    '()))
 
 ; FUNCIÓN 14 (LISTA)
 (define status
