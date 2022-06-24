@@ -177,18 +177,116 @@
   (lambda ()
     '()))
 
-; FUNCIÓN 9
+; FUNCIÓN 9 (AVANZANDO)
 (define game
   (lambda (numPlayers cardsSet mode)
-    (list numPlayers cardsSet mode '() '() '() '() '())))
+    (list numPlayers cardsSet mode "No iniciado" '() 0 '() '())))
 
-; FUNCIÓN 10
+; GETTERS
+(define getNumPlayers
+  (lambda (game)
+    (car game)))
+
+(define getCardsSet
+  (lambda (game)
+    (car (cdr game))))
+
+(define getMode
+  (lambda (game)
+    (car (cdr (cdr game)))))
+
+(define getStatus
+  (lambda (game)
+    (car (cdr (cdr (cdr game))))))
+
+(define getTable
+  (lambda (game)
+    (car (cdr (cdr (cdr (cdr game)))))))
+
+(define getTurn
+  (lambda (game)
+    (car (cdr (cdr (cdr (cdr (cdr game))))))))
+
+(define getPlayers
+  (lambda (game)
+    (car (cdr (cdr (cdr (cdr (cdr (cdr game)))))))))
+
+(define getScores
+  (lambda (game)
+    (car (cdr (cdr (cdr (cdr (cdr (cdr (cdr game))))))))))
+
+; FUNCIÓN 10 (NO TERMINADA)
 (define stackMode
-  (lambda ()
-    '()))
+  (lambda (cardsSet)
+    (reverse (getDeck cardsSet))))
 
+; FUNCIÓN 11 (LISTA)
+(define register
+  (lambda (user game)
+    (if (equal? (length (getPlayers game)) (getNumPlayers game))
+        game
+        (if (equal? #t (verificarName user game (length (getPlayers game)) 0))
+            (cons (getNumPlayers game)(cons (getCardsSet game)(cons (getMode game)(cons (getStatus game)(cons (getTable game)(cons (getTurn game)(cons (agregateName user game)(list (agregateScore game)))))))))
+            game))))
+
+(define verificarName
+  (lambda (user game aux aux2)
+    (if (equal? aux aux2)
+        #t
+        (if (equal? user (getElemento (getPlayers game) aux2))
+            #f
+            (verificarName user game aux (+ aux2 1))))))
+
+(define agregateName
+  (lambda (user game)
+    (cons user (getPlayers game))))
+
+(define agregateScore
+  (lambda (game)
+    (cons 0 (getScores game))))
+
+; FUNCIÓN 12 (LISTA)
+(define whoseTurnIsIt?
+  (lambda (game)
+    (getElemento (getPlayers game) (getTurn game))))
+
+; FUNCIÓN 13 PLAY
+(define play
+  (lambda (game action)
+    (if (equal? action "null")
+        #t
+        (if (equal? action "spotit")
+            #t
+            (if (equal? action "pass")
+                #t
+                (if (equal? action "finish")
+                    #t
+                    #f))))))
+
+; FUNCIÓN 14 (LISTA)
+(define status
+  (lambda (game)
+    (getStatus game)))
+
+; FUNCIÓN 15 (LISTA, PERO FALTA SOLUCIÓN DE POSIBLES ERRORES (NO EXISTE USUARIO)
+(define score
+  (lambda (game user)
+    (findPlayer (getPlayers game) (getScores game) user 0)))
+
+(define findPlayer
+  (lambda (players scores user aux)
+    (if (equal? (getElemento players aux) user)
+        (getElemento scores aux)
+        (findPlayer players scores user (+ aux 1)))))
+        
+     
+; FUNCIÓN 16 GAMETOSTRING
+
+
+
+; DEFINICIONES INICIALES
 (define elementsSet (list "A" "B" "C" "D" "E" "F" "G"))
-(define numPlayers 2)
+(define numPlayers 4)
 (define numElementsPerCard 3)
 (define maxCards 5)
 
@@ -203,7 +301,20 @@
 
 (define dobbleSet1 (cardsSet elementsSet numElementsPerCard -1))
 (define game1 (game numPlayers dobbleSet1 stackMode))
-
+;registra 3 usuarios con nombres de usuario diferentes
+(define game2 (register "user1" game1))
+(define game3 (register "user2" game2))
+(define game4 (register "user3" game3))
+;intenta registrar al usuario “user3” que ya fue registrado
+(define game5 (register "user3" game4))
+;registra al cuarto jugador
+(define game6 (register "user4" game5))
+;intenta registrar a un quinto jugador
+(define game7 (register "user5" game6))
+;retorna el nombre de usuario a quien corresponde el turno
+(define whoseTurnIsIt?0 (whoseTurnIsIt? game7))
+(define status0 (status game7))
+(define score0 (score game7 "user2"))
 
 ; PRUEBAS PERSONALES
 (define getDeck0 (getDeck dobbleSet0))
