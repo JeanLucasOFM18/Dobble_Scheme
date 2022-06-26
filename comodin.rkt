@@ -180,7 +180,7 @@
 ; FUNCIÓN 9 (AVANZANDO)
 (define game
   (lambda (numPlayers cardsSet mode)
-    (list numPlayers cardsSet mode "No iniciado" 0 '() '())))
+    (list numPlayers cardsSet mode "No iniciado" '() 0 '() '())))
 
 ; GETTERS
 (define getNumPlayers
@@ -199,19 +199,23 @@
   (lambda (game)
     (car (cdr (cdr (cdr game))))))
 
-(define getTurn
+(define getTable
   (lambda (game)
     (car (cdr (cdr (cdr (cdr game)))))))
 
-(define getPlayers
+(define getTurn
   (lambda (game)
     (car (cdr (cdr (cdr (cdr (cdr game))))))))
 
-(define getScores
+(define getPlayers
   (lambda (game)
     (car (cdr (cdr (cdr (cdr (cdr (cdr game)))))))))
 
-; FUNCIÓN 10 (NO TERMINADA)
+(define getScores
+  (lambda (game)
+    (car (cdr (cdr (cdr (cdr (cdr (cdr (cdr game))))))))))
+
+; FUNCIÓN 10 (LISTA)
 (define stackMode
   (lambda (cardsSet)
     (list (car (reverse cardsSet))(car (cdr (reverse cardsSet))))))
@@ -222,7 +226,7 @@
     (if (equal? (length (getPlayers game)) (getNumPlayers game))
         game
         (if (equal? #t (verificarName user game (length (getPlayers game)) 0))
-            (cons (getNumPlayers game)(cons (getCardsSet game)(cons (getMode game)(cons (getStatus game)(cons (getTurn game)(cons (agregateName user game)(list (agregateScore game))))))))
+            (cons (getNumPlayers game)(cons (getCardsSet game)(cons (getMode game)(cons (getStatus game) (cons (getTable game) (cons (getTurn game)(cons (agregateName user game)(list (agregateScore game)))))))))
             game))))
 
 (define verificarName
@@ -250,14 +254,14 @@
 (define play
   (lambda (game action)
     (if (equal? action null)
-        ((getMode game) (car (getCardsSet game)))
+        (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "En juego" (cons ((getMode game) (car (getCardsSet game))) (cons (getTurn game) (cons (getPlayers game)(list (getScores game)))))))))
         (if (equal? action pass)
-            (pass (getTurn game) (getNumPlayers game))
+            (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "En juego" (cons (getTable game) (cons (pass (getTurn game) (getNumPlayers game)) (cons (getPlayers game)(list (getScores game)))))))))
             (if (equal? action "finish")
                 #t
                 (if (equal? #t (verificarComparacion ((getMode game) (car (getCardsSet game))) action (car (cdr (getCardsSet game))) 0 0))
-                    (cons (getNumPlayers game)(cons (retirarCartas (car (getCardsSet game)))(cons (getMode game)(cons "En juego" (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game)(list (sumaPuntaje (getScores game)(getTurn game)(length (getScores game)) 0))))))))
-                    (cons (getNumPlayers game)(cons (devolverCartas ((getMode game) (car (getCardsSet game))) (car (getCardsSet game))) (cons (getMode game)(cons "En juego" (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game) (list (getScores game))))))))))))))
+                    (cons (getNumPlayers game)(cons (cons (retirarCartas (car (getCardsSet game))) (cdr (getCardsSet game))) (cons (getMode game)(cons "En juego"(cons '() (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game)(list (sumaPuntaje (getScores game)(getTurn game)(length (getScores game)) 0)))))))))
+                    (cons (getNumPlayers game)(cons (cons (devolverCartas ((getMode game) (car (getCardsSet game))) (car (getCardsSet game))) (cdr (getCardsSet game))) (cons (getMode game)(cons "En juego" (cons '() (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game) (list (getScores game)))))))))))))))
 
 (define spotit
   (lambda (coincidencia)
@@ -354,6 +358,13 @@
 (define status0 (status game7))
 (define score0 (score game7 "user2"))
 
+(define game8 (play game7 null))
+(define game9 (play game8 pass))
+(define game10 (play game9 (spotit "C")))
+(define game11 (play game10 null))
+(define game12 (play game11 (spotit "E")))
+(define game13 (play game12 pass))
+(define game14 (play game13 pass))
 ; PRUEBAS PERSONALES
 (define getDeck0 (getDeck dobbleSet0))
 (define getElements0 (getElements dobbleSet0))
