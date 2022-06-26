@@ -253,15 +253,17 @@
 ; FUNCIÓN 13 PLAY
 (define play
   (lambda (game action)
-    (if (equal? action null)
-        (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "En juego" (cons ((getMode game) (car (getCardsSet game))) (cons (getTurn game) (cons (getPlayers game)(list (getScores game)))))))))
-        (if (equal? action pass)
-            (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "En juego" (cons (getTable game) (cons (pass (getTurn game) (getNumPlayers game)) (cons (getPlayers game)(list (getScores game)))))))))
-            (if (equal? action "finish")
-                #t
-                (if (equal? #t (verificarComparacion ((getMode game) (car (getCardsSet game))) action (car (cdr (getCardsSet game))) 0 0))
-                    (cons (getNumPlayers game)(cons (cons (retirarCartas (car (getCardsSet game))) (cdr (getCardsSet game))) (cons (getMode game)(cons "En juego"(cons '() (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game)(list (sumaPuntaje (getScores game)(getTurn game)(length (getScores game)) 0)))))))))
-                    (cons (getNumPlayers game)(cons (cons (devolverCartas ((getMode game) (car (getCardsSet game))) (car (getCardsSet game))) (cdr (getCardsSet game))) (cons (getMode game)(cons "En juego" (cons '() (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game) (list (getScores game)))))))))))))))
+    (if (equal? (length game) 9)
+        #f
+        (if (equal? action null)
+            (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "En juego" (cons ((getMode game) (car (getCardsSet game))) (cons (getTurn game) (cons (getPlayers game)(list (getScores game)))))))))
+            (if (equal? action pass)
+                (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "En juego" (cons (getTable game) (cons (pass (getTurn game) (getNumPlayers game)) (cons (getPlayers game)(list (getScores game)))))))))
+                (if (equal? action finish)
+                    (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "Terminado" (cons (getTable game) (cons (getTurn game) (cons (getPlayers game) (cons (getScores game) (list (finish (getScores game)(getPlayers game)))))))))))
+                    (if (equal? #t (verificarComparacion ((getMode game) (car (getCardsSet game))) action (car (cdr (getCardsSet game))) 0 0))
+                        (cons (getNumPlayers game)(cons (cons (retirarCartas (car (getCardsSet game))) (cdr (getCardsSet game))) (cons (getMode game)(cons "En juego"(cons '() (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game)(list (sumaPuntaje (getScores game)(getTurn game)(length (getScores game)) 0)))))))))
+                        (cons (getNumPlayers game)(cons (cons (devolverCartas ((getMode game) (car (getCardsSet game))) (car (getCardsSet game))) (cdr (getCardsSet game))) (cons (getMode game)(cons "En juego" (cons '() (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game) (list (getScores game))))))))))))))))
 
 (define spotit
   (lambda (coincidencia)
@@ -302,8 +304,32 @@
         (+ turno 1))))
 
 (define finish
-  (lambda ()
-    '()))
+  (lambda (puntajes players)
+    (obtenerGanadores players puntajes (puntajeMax puntajes 0 0) 0)))
+
+(define puntajeMax
+  (lambda (puntajes aux aux2)
+    (if (equal? (length puntajes) aux2)
+        aux
+        (if (> (getElemento puntajes aux2) aux)
+            (puntajeMax puntajes (getElemento puntajes aux2) (+ aux2 1))
+            (puntajeMax puntajes aux (+ aux2 1))))))
+
+;(define cantGanadores
+;  (lambda (puntajes puntajeGanador ganadores aux)
+;    (if (equal? (length puntajes) aux)
+;        ganadores
+;        (if (equal? (getElemento puntajes aux) puntajeGanador)
+;            (cantGanadores puntajes puntajeGanador (+ ganadores 1) (+ aux 1))
+;            (cantGanadores puntajes puntajeGanador ganadores (+ aux 1))))))
+
+(define obtenerGanadores
+  (lambda (players puntajes puntajeGanador aux)
+    (if (equal? (length puntajes) aux)
+        '()
+        (if (equal? (getElemento puntajes aux) puntajeGanador)
+            (cons (getElemento players aux)(obtenerGanadores players puntajes puntajeGanador (+ aux 1)))
+            (obtenerGanadores players puntajes puntajeGanador (+ aux 1))))))
 
 ; FUNCIÓN 14 (LISTA)
 (define status
@@ -365,6 +391,8 @@
 (define game12 (play game11 (spotit "E")))
 (define game13 (play game12 pass))
 (define game14 (play game13 pass))
+(define game15 (play game14 finish))
+(define game16 (play game15 null))
 ; PRUEBAS PERSONALES
 (define getDeck0 (getDeck dobbleSet0))
 (define getElements0 (getElements dobbleSet0))
