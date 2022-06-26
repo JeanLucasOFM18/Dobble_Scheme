@@ -3,9 +3,11 @@
 ; FUNCION 1 (LISTA PERO FALTAN RESTRICCIONES)
 (define cardsSet
   (lambda (Elements numE maxCards)
-    (if (equal? maxCards -1)
-        (list (createDeck Elements numE) Elements numE maxCards)
-        (list (cutDeck (createDeck Elements numE) maxCards) Elements numE maxCards))))
+    (if (< (length (eliminaRepetidos Elements 0 0 (repetidos (detectaRepetidos Elements 0 1) 0 0 '() 1) 0)) (calculo numE))
+        #f
+        (if (equal? maxCards -1)
+            (list (aleatorizar (createDeck (aleatorizar (eliminaRepetidos Elements 0 0 (repetidos (detectaRepetidos Elements 0 1) 0 0 '() 1) 0)) numE)) (eliminaRepetidos Elements 0 0 (repetidos (detectaRepetidos Elements 0 1) 0 0 '() 1) 0) numE maxCards)
+            (list (cutDeck (aleatorizar (createDeck (aleatorizar (eliminaRepetidos Elements 0 0 (repetidos (detectaRepetidos Elements 0 1) 0 0 '() 1) 0)) numE)) maxCards) (eliminaRepetidos Elements 0 0 (repetidos (detectaRepetidos Elements 0 1) 0 0 '() 1) 0) numE maxCards)))))
 
 ; GETTERS
 (define getDeck
@@ -24,6 +26,46 @@
   (lambda (cardsSet)
     (car (cdr (cdr (cdr cardsSet))))))
 
+(define detectaRepetidos
+  (lambda (Elementos aux aux2)
+    (if (equal? (length Elementos) aux)
+        '()
+        (if (equal? (length Elementos) aux2)
+            (detectaRepetidos Elementos (+ aux 1) (+ aux 2))
+            (if (equal? (getElemento Elementos aux) (getElemento Elementos aux2))
+                (cons (getElemento Elementos aux)(detectaRepetidos Elementos aux (+ aux2 1)))
+                (detectaRepetidos Elementos aux (+ aux2 1)))))))
+
+(define repetidos
+  (lambda (listaRepetidos aux aux2 listaFinal habilitador)
+    (if (equal? (length listaRepetidos) aux)
+        listaFinal
+        (if (equal? (length listaFinal) aux2)
+            (if (equal? habilitador 1)
+                (repetidos listaRepetidos (+ aux 1) 0 (append listaFinal (list (getElemento listaRepetidos aux))) 1)
+                (repetidos listaRepetidos (+ aux 1) 0 listaFinal 1))
+            (if (equal? (getElemento listaRepetidos aux)(getElemento listaFinal aux2))
+                (repetidos listaRepetidos aux (+ aux2 1) listaFinal 0)
+                (repetidos listaRepetidos aux (+ aux2 1) listaFinal habilitador))))))
+           
+(define eliminaRepetidos
+  (lambda (Elementos aux aux2 repetidos habilitador)
+    (if (equal? (length Elementos) aux)
+        repetidos
+        (if (equal? (length repetidos) aux2)
+            (if (equal? habilitador 0)
+                (cons (getElemento Elementos aux)(eliminaRepetidos Elementos (+ aux 1) 0 repetidos 0))
+                (eliminaRepetidos Elementos (+ aux 1) 0 repetidos 0))
+            (if (equal? (getElemento Elementos aux) (getElemento repetidos aux2))
+                (eliminaRepetidos Elementos aux (+ aux2 1) repetidos 1)
+                (eliminaRepetidos Elementos aux (+ aux2 1) repetidos habilitador))))))
+
+(define aleatorizar
+  (lambda (Elements)
+    (if (null? Elements)
+        '()
+        (cons (getElemento (reverse Elements) 0) (aleatorizar (cdr (reverse Elements)))))))
+     
 (define calculo
   (lambda (numElementsPerCard)
     (+ (+ (sqr (- numElementsPerCard 1)) (- numElementsPerCard 1)) 1)))
@@ -352,14 +394,50 @@
 
 
 
-; DEFINICIONES INICIALES
-(define elementsSet (list "A" "B" "C" "D" "E" "F" "G"))
-(define numPlayers 4)
-(define numElementsPerCard 3)
-(define maxCards 5)
+;-----------------------------------EJEMPLOS DE USO------------------------------------------------------------
+
+;-----------------------------------DEFINICIONES INICIALES-----------------------------------------------------
+
+; Definiciones para cardsSet 1
+(define elementsSet0 (list "A" "B" "C" "D" "E" "F" "G"))
+(define numPlayers0 4)
+(define numElementsPerCard0 3)
+(define maxCards0 5)
+
+; Definiciones para cardsSet 2
+(define elementsSet1 (list "SOL" "LUNA" "NIEVE" "LLUVIA" "CELESTE"))
+(define numPlayers1 3)
+(define numElementsPerCard1 3)
+(define maxCards1 7)
+
+; Definiciones para cardsSet 3
+(define elementsSet2 (list "SOL" "LUNA" "NIEVE" "LLUVIA" "CELESTE" "ROJO" "AZUL" "UC" "CC" "UCH" "LAYS" "MOUSE" "PS5"))
+(define numPlayers2 2)
+(define numElementsPerCard2 4)
+(define maxCards2 -1)
+
+;-----------------------------------EJEMPLOS PARA LA FUNCION CARDSSET-----------------------------------------------------
+
+; IMPORTANTE: ESTA FUNCIÓN REQUIERE DE LOS ELEMENTOS NECESARIOS PARA GENERAR EL MAZO INDEPENDIENTE DE LA CANTIDAD DE CARTAS A GENERAR
+; EJEMPLO: SI SE QUIERE GENERAR 5 CARTAS CON 3 ELEMENTOS POR CADA UNA, SE DEBE INGRESAR 7 ELEMENTOS.
+
+; Prueba con cardsSet1
+; En este caso se genera un mazo incompleto, ya que, se necesitan 7 cartas para jugar
+; El mazo igualmente se crea, debido a que cuenta con la cantidad de elementos necesarias para generar un mazo completo
+(define dobbleSet0 (cardsSet elementsSet0 numElementsPerCard0 maxCards0))
+
+; Prueba con cardsSet2
+; En este caso el programa retorna false, debido a que no se cuenta con la cantidad necesaria de elementos para generar un set completo
+(define dobbleSet1 (cardsSet elementsSet1 numElementsPerCard1 maxCards1))
+
+; Prueba con cardsSet3
+; En este caso se genera un set completo con el que se puede jugar
+(define dobbleSet2 (cardsSet elementsSet2 numElementsPerCard2 maxCards2))
+
+
+
 
 ; PRUEBAS SCRIPTS
-(define dobbleSet0 (cardsSet elementsSet numElementsPerCard maxCards))
 (define dobble?0 (dobble? dobbleSet0))
 (define numCards0 (numCards dobbleSet0))
 (define nthCard0 (nthCard dobbleSet0 3))
@@ -367,41 +445,41 @@
 (define requiredElements0 (requiredElements (nthCard dobbleSet0 1)))
 (define missingCards0 (missingCards dobbleSet0))
 
-(define dobbleSet1 (cardsSet elementsSet numElementsPerCard -1))
-(define game1 (game numPlayers dobbleSet1 stackMode))
+;(define game1 (game numPlayers dobbleSet1 stackMode))
 ;registra 3 usuarios con nombres de usuario diferentes
-(define game2 (register "user1" game1))
-(define game3 (register "user2" game2))
-(define game4 (register "user3" game3))
+;(define game2 (register "user1" game1))
+;(define game3 (register "user2" game2))
+;(define game4 (register "user3" game3))
 ;intenta registrar al usuario “user3” que ya fue registrado
-(define game5 (register "user3" game4))
+;(define game5 (register "user3" game4))
 ;registra al cuarto jugador
-(define game6 (register "user4" game5))
+;(define game6 (register "user4" game5))
 ;intenta registrar a un quinto jugador
-(define game7 (register "user5" game6))
+;(define game7 (register "user5" game6))
 ;retorna el nombre de usuario a quien corresponde el turno
-(define whoseTurnIsIt?0 (whoseTurnIsIt? game7))
-(define status0 (status game7))
-(define score0 (score game7 "user2"))
+;(define whoseTurnIsIt?0 (whoseTurnIsIt? game7))
+;(define status0 (status game7))
+;(define score0 (score game7 "user2"))
 
-(define game8 (play game7 null))
-(define game9 (play game8 pass))
-(define game10 (play game9 (spotit "C")))
-(define game11 (play game10 null))
-(define game12 (play game11 (spotit "E")))
-(define game13 (play game12 pass))
-(define game14 (play game13 pass))
-(define game15 (play game14 finish))
-(define game16 (play game15 null))
+;(define game8 (play game7 null))
+;(define game9 (play game8 pass))
+;(define game10 (play game9 (spotit "C")))
+;(define game11 (play game10 null))
+;(define game12 (play game11 (spotit "E")))
+;(define game13 (play game12 pass))
+;(define game14 (play game13 pass))
+;(define game15 (play game14 finish))
+;(define game16 (play game15 null))
+
 ; PRUEBAS PERSONALES
-(define getDeck0 (getDeck dobbleSet0))
-(define getElements0 (getElements dobbleSet0))
-(define getNumE0 (getNumE dobbleSet0))
-(define getMaxC0 (getMaxC dobbleSet0))
-(define calculo1 (calculo numElementsPerCard))
+;(define getDeck0 (getDeck dobbleSet0))
+;(define getElements0 (getElements dobbleSet0))
+;(define getNumE0 (getNumE dobbleSet0))
+;(define getMaxC0 (getMaxC dobbleSet0))
+;(define calculo1 (calculo numElementsPerCard))
 ;(define crear (createDeck elementsSet numElementsPerCard))
 ;(define obtener (getElemento elementsSet 3))
 ;(define crear2 (nextCards elementsSet numElementsPerCard 1 0))
-(define pruebas (list (list 1 2) (list 3 4)))
+;(define pruebas (list (list 1 2) (list 3 4)))
 ;(define crear3 (lastCards elementsSet numElementsPerCard 0 0 0))
 ;(define dobble?1 (dobble? (list (list "A" "B" "C")(list "A" "B" "C")(list "A" "D" "E")(list "A" "F" "G")(list "B" "E" "G")(list "B" "F" "G")(list "C" "D" "G"))))
