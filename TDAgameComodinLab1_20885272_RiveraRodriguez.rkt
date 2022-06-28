@@ -89,6 +89,48 @@
   (lambda (game)
     (car (cdr (cdr (cdr (cdr (cdr (cdr (cdr game))))))))))
 
+;---------------------------------------MODIFICADORES------------------------------------------
+
+; Descripción: Modifica la mesa del game
+; Dominio: Un game y la mesa actualizada
+; Recorrido: Un game actualizado
+; Tipo de Recursión: No se utiliza recursión
+(define setTable
+  (lambda (game newTable)
+    (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "En juego" (cons newTable (cons (getTurn game) (cons (getPlayers game)(list (getScores game)))))))))))
+
+; Descripción: Modifica el cardsSet y el turno del game
+; Dominio: Un game, un cardsSet actualizado y un turno actualizado
+; Recorrido: Un game actualizado
+; Tipo de Recursión: No se utiliza recursión
+(define setGamePassTurn
+  (lambda (game newCardsSet newTurn)
+    (cons (getNumPlayers game)(cons newCardsSet (cons (getMode game)(cons "En juego" (cons '() (cons newTurn (cons (getPlayers game)(list (getScores game)))))))))))
+
+; Descripción: Modifica el cardsSet, el turno y los puntajes del game
+; Dominio: Un game, un cardsSet actualizado, un turno actualizado y puntajes actualizados
+; Recorrido: Un game actualizado
+; Tipo de Recursión: No se utiliza recursión
+(define setGameCorrectaCoincidencia
+  (lambda (game newCardsSet newTurn newPuntajes)
+    (cons (getNumPlayers game)(cons newCardsSet (cons (getMode game)(cons "En juego"(cons '() (cons newTurn (cons (getPlayers game) newPuntajes)))))))))
+
+; Descripción: Modifica el cardsSet y el turno del game
+; Dominio: Un game, un cardsSet actualizado y un turno actualizado
+; Recorrido: Un game actualizado
+; Tipo de Recursión: No se utiliza recursión
+(define setGameIncorrectaCoincidencia
+  (lambda (game newCardsSet newTurn)
+    (cons (getNumPlayers game)(cons newCardsSet (cons (getMode game)(cons "En juego" (cons '() (cons newTurn (cons (getPlayers game) (list (getScores game)))))))))))
+
+; Descripción: Modifica el game para que termine el juego, agregando la lista de ganadores
+; Dominio: Un game y lista de ganadores (list)
+; Recorrido: Un game actualizado y finalizado
+; Tipo de Recursión: No se utiliza recursión
+(define setGameFinish
+  (lambda (game listaGanadores)
+    (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "Terminado" (cons (getTable game) (cons (getTurn game) (cons (getPlayers game) (cons (getScores game) listaGanadores))))))))))
+
 ;-----------------------------------OTRAS FUNCIONES---------------------------------------------------------------
 
 ; Descripción: Función que permite verificar si un conjunto de cartas es válido, es decir, que en cada carta
@@ -270,8 +312,8 @@
                             (if (equal? 6 aux)
                                 (string-append (string-append "LISTA DE JUGADORES: \n" (jugadoresString (getPlayers game) (getScores game) 0)) (creaGameString game (+ aux 2)))
                                 (if (equal? 8 aux)
-                                    (if (> (length (getElemento game 8)) 1)
-                                        (string-append (string-append "GANADOR: \n" (jugadoresString (getPlayers game) (getScores game) 0)) (creaGameString game (+ aux 1)))
+                                    (if (<= (length (getElemento game 8)) 1)
+                                        (string-append (string-append "GANADOR: \n" (jugadoresGanadoresString (getPlayers game) (getScores game) (puntajeMax (getScores game) 0 0) 0 1) (creaGameString game (+ aux 1))))
                                         (string-append (string-append "GANADORES: \n" (jugadoresGanadoresString (getPlayers game) (getScores game) (puntajeMax (getScores game) 0 0) 0 1) (creaGameString game (+ aux 1)))))
                                     '()))))))))))
 
@@ -285,8 +327,12 @@
     (if (equal? (length carta) aux)
         ""
         (if (equal? (- (length carta) 1) aux)
-            (string-append (getElemento carta aux) (cartaString2 carta (+ aux 1)))
-            (string-append (string-append (getElemento carta aux) ", ") (cartaString2 carta (+ aux 1)))))))
+            (if (number? (getElemento carta aux))
+                (string-append (number->string (getElemento carta aux)) (cartaString2 carta (+ aux 1)))
+                (string-append (getElemento carta aux) (cartaString2 carta (+ aux 1))))
+            (if (number? (getElemento carta aux))
+                (string-append (string-append (number->string (getElemento carta aux)) ", ") (cartaString2 carta (+ aux 1)))
+                (string-append (string-append (getElemento carta aux) ", ") (cartaString2 carta (+ aux 1))))))))
 
 ; Descripción: Función que obtiene la representación string de los jugadores con su puntaje
 ; Dominio: Una lista de jugadores y puntajes (ambos list) y un auxiliar (integer)

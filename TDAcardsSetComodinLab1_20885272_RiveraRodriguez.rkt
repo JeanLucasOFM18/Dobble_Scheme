@@ -344,8 +344,12 @@
     (if (equal? (length carta) aux)
         "\n"
         (if (equal? (- (length carta) 1) aux)
-            (string-append (getElemento carta aux) (cartaString carta (+ aux 1)))
-            (string-append (string-append (getElemento carta aux) ", ") (cartaString carta (+ aux 1)))))))
+            (if (number? (getElemento carta aux))
+                (string-append (number->string (getElemento carta aux)) (cartaString carta (+ aux 1)))
+                (string-append (getElemento carta aux) (cartaString carta (+ aux 1))))
+            (if (number? (getElemento carta aux))
+                (string-append (string-append (number->string (getElemento carta aux)) ", ") (cartaString carta (+ aux 1)))
+                (string-append (string-append (getElemento carta aux) ", ") (cartaString carta (+ aux 1))))))))
 
 ; Descripción: Función random (no utilizada), se omite descripción
 (define randomFn

@@ -1,5 +1,7 @@
 #lang racket
 
+; COMODÍN LAB 1 DESARROLLADO POR JEAN LUCAR RIVERA
+
 (require "TDAcardsSetComodinLab1_20885272_RiveraRodriguez.rkt")
 (require "TDAgameComodinLab1_20885272_RiveraRodriguez.rkt")
 
@@ -131,19 +133,19 @@
 (define play
   (lambda (game action)
     (if (equal? action finish)
-        (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "Terminado" (cons (getTable game) (cons (getTurn game) (cons (getPlayers game) (cons (getScores game) (list (finish (getScores game)(getPlayers game)))))))))))
+        (setGameFinish game (list (finish (getScores game)(getPlayers game))))
         (if (equal? (length game) 9)
             #f
             (if (< (length (car (getCardsSet game))) 2)
                 game
                 (if (equal? action null)
-                    (cons (getNumPlayers game)(cons (getCardsSet game) (cons (getMode game) (cons "En juego" (cons ((getMode game) (car (getCardsSet game))) (cons (getTurn game) (cons (getPlayers game)(list (getScores game)))))))))
+                    (setTable game ((getMode game) (car (getCardsSet game))))
                     (if (equal? action pass)
-                        (cons (getNumPlayers game)(cons (cons (devolverCartas ((getMode game)(car (getCardsSet game)))(car(getCardsSet game)))(cdr (getCardsSet game)))(cons (getMode game)(cons "En juego" (cons '() (cons (pass (getTurn game) (getNumPlayers game)) (cons (getPlayers game)(list (getScores game)))))))))
+                        (setGamePassTurn game (cons (devolverCartas ((getMode game)(car (getCardsSet game)))(car(getCardsSet game)))(cdr (getCardsSet game))) (pass (getTurn game) (getNumPlayers game)))
                         (if (equal? #t (verificarComparacion (getTable game) action (car (cdr (cdr (getCardsSet game)))) 0 0))
-                            (cons (getNumPlayers game)(cons (cons (retirarCartas (car (getCardsSet game))) (cdr (getCardsSet game))) (cons (getMode game)(cons "En juego"(cons '() (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game)(list (sumaPuntaje (getScores game)(getTurn game)(length (getScores game)) 0)))))))))
-                            (cons (getNumPlayers game)(cons (cons (devolverCartas ((getMode game) (car (getCardsSet game))) (car (getCardsSet game))) (cdr (getCardsSet game))) (cons (getMode game)(cons "En juego" (cons '() (cons (pass (getTurn game) (getNumPlayers game))(cons (getPlayers game) (list (getScores game)))))))))))))))))
-
+                            (setGameCorrectaCoincidencia game (cons (retirarCartas (car (getCardsSet game))) (cdr (getCardsSet game))) (pass (getTurn game) (getNumPlayers game)) (list (sumaPuntaje (getScores game)(getTurn game)(length (getScores game)) 0))) 
+                            (setGameIncorrectaCoincidencia game (cons (devolverCartas ((getMode game) (car (getCardsSet game))) (car (getCardsSet game))) (cdr (getCardsSet game))) (pass (getTurn game) (getNumPlayers game)))))))))))
+                           
 ;--------------------------FUNCIÓN STATUS------------------------------------------------------
 
 ; Descripción: Función que permite obtener el estado del juego
@@ -178,13 +180,11 @@
 
 ;-----------------------------------EJEMPLOS DE USO------------------------------------------------------------
 
-; IMPORTANTE: ESTA FUNCIÓN SE DECLARA PARA RESPETAR LOS EJEMPLOS DE USO PRESENTES EN EL DRIVE
+; IMPORTANTE: LA FUNCIÓN RANDOM SE USA PARA RESPETAR LOS EJEMPLOS DE USO PRESENTES EN EL DRIVE EN RELACIÓN AL CARDSSET, SIN EMBARGO, EN EL GAME SE OMITE ESTA FUNCIÓN EN EL DOMINIO.
 ; PARA LOS ASPECTOS DE ALEATORIZACIÓN SE OCUPÓ LA OPCIÓN DE CREAR UN MÉTODO PERSONAL, EN ESTE CASO SON LAS FUNCIONES "ALEATORIZAR" Y "ALEATORIZARMAZO"
 
-; Función random
-(define m 2147483647)
-(define a 1103515245)
-(define c 12345)
+; TAMBIÉN SE DEBE TENER EN CUENTA QUE LA LISTA DE ELEMENTOS DADA POR EL USUARIO DEBE SER DE STRINGS, POR EJEMPLO SI QUIERE INGRESAR (1 2 3 4) DEBE HACERLO ASÍ: ("1" "2" "3" "4")
+; SE SOLICITA HACER ESTE PROCESO, YA QUE, DE NO REALIZARLO LA FUNCIÓN CARDSSET->STRING PODRÍA VERSE AFECTADA. (EJEMPLO EN EL CARDSSET 3)
 
 ;-----------------------------------DEFINICIONES INICIALES-----------------------------------------------------
 
@@ -201,7 +201,7 @@
 (define maxCards1 7)
 
 ; Definiciones para cardsSet 3
-(define elementsSet2 (list "USACH" "LOL" "PARADIGMAS" "ANDROID" "PS4" "XBOX" "DJ"))
+(define elementsSet2 (list "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12"))
 (define numPlayers2 2)
 (define numElementsPerCard2 3)
 (define maxCards2 -1)
@@ -214,8 +214,9 @@
 
 ;-----------------------------------EJEMPLOS PARA LA FUNCION CARDSSET-----------------------------------------------------
 
-; IMPORTANTE: ESTA FUNCIÓN REQUIERE DE LOS ELEMENTOS NECESARIOS PARA GENERAR EL MAZO INDEPENDIENTE DE LA CANTIDAD DE CARTAS A GENERAR
-; EJEMPLO: SI SE QUIERE GENERAR 5 CARTAS CON 3 ELEMENTOS POR CADA UNA, SE DEBE INGRESAR 7 ELEMENTOS.
+; IMPORTANTE: ESTA FUNCIÓN REQUIERE DE LOS ELEMENTOS NECESARIOS PARA GENERAR EL MAZO COMPLETO, INDEPENDIENTE DE LA CANTIDAD DE CARTAS A GENERAR
+; EJEMPLO: SI SE QUIERE GENERAR 5 CARTAS CON 3 ELEMENTOS POR CADA UNA, SE DEBE INGRESAR 7 ELEMENTOS EN LA LISTA, DE LO CONTRARIO, SE RETORNA FALSE, YA QUE,
+; PUEDE PRODUCIR ERRORES EN FUNCIONES COMO MISSINGCARDS, ETC.
 
 ; Prueba con cardsSet1
 ; En este caso se genera un mazo incompleto, ya que, se necesitan 7 cartas para jugar
@@ -320,6 +321,7 @@
 
 ; IMPORTANTE: EL USO DE LA FUNCIÓN RANDOM, COMO FUE EXPLICADO ANTERIORMENTE SE HIZO DE UNA CREACIÓN PERSONAL Y LA ALEATORIZACIÓN DEL MAZO SE REALIZÓ EN PROCESOS ANTERIORES
 ; ES POR ESTO, QUE NO SE INCLUYE LA FUNCIÓN RANDOM EN EL DOMINIO DE LA FUNCIÓN GAME
+; PARA EVITAR ERRORES SEGUIR LOS EJEMPLOS DADOS, DONDE EN EL DOMINIO SE OMITE LA FUNCIÓN RANDOM
 
 ; SI SE INTENTA INICIAR UN JUEGO CON UN MAZO INVÁLIDO, SE RETORNA FALSE
 (define game0 (game numPlayers0 dobbleSet0 stackMode))
@@ -361,6 +363,7 @@
 ;-----------------------------------EJEMPLOS PARA LA FUNCIÓN PLAY----------------------------------------------------------------
 
 ; IMPORTANTE: SIEMPRE SE DEBE USAR LA ACCIÓN "NULL" ANTES DE REALIZAR OTRA ACCIÓN, CASO CONTRARIO PUEDE GENERAR ERRORES EN EL PROGRAMA
+; TAMBIÉN SE DEBE CONSIDERAR QUE EL ORDEN DE LOS TURNOS PARTE DESDE EL ÚLTIMO JUGADOR REGISTRADO, EN ESTE CASO ES "USER3" EL PRIMERO EN JUGAR.
 
 ; Se usa la función stackMode y se da vuelta las 2 cartas ubicadas en la parte superior del mazo, para mostrarlas en la mesa
 (define game7 (play game6 null))
@@ -414,26 +417,43 @@
 ; Determina a que jugador le pertenece el turno, en este caso como se está preguntando al inicio, le corresponde el turno a "user3"
 (define whoseTurnIsIt?0 (whoseTurnIsIt? game6))
 
+; Determina a que jugador le pertenece el turno en el game15
 (define whoseTurnIsIt?1 (whoseTurnIsIt? game15))
 
+; Determina a que jugador le pertenece el turno en el game20
 (define whoseTurnIsIt?2 (whoseTurnIsIt? game20))
 
 ;-----------------------------------EJEMPLOS PARA LA FUNCIÓN STATUS--------------------------------------------------------------
 
+; Se obtiene el estado del juego antes de ser iniciado
 (define status0 (status game6))
 
+; Se obtiene el estado del juego en medio de una partida
 (define status1 (status game17))
 
+; Se obtiene el estado del juego terminado
 (define status2 (status game24))
 
 ;-----------------------------------EJEMPLOS PARA LA FUNCIÓN SCORE-------------------------------------------------------------
 
+; Se obtiene el puntaje de "user2" en el game10
 (define score0 (score game10 "user2"))
 
+; Se obtiene el puntaje de "user5" en el game14, como este jugador no existe en los registros, se retorna false
 (define score1 (score game14 "user5"))
 
+; Se obtiene el puntaje de "user1" en el game20
 (define score2 (score game20 "user1"))
 
 ;-----------------------------------EJEMPLOS PARA LA FUNCIÓN GAME->STRING-----------------------------------------------------
 
+; IMPORTANTE: PARA HACER USO DE ESTA FUNCIÓN QUITAR ";" A LOS 3 EJEMPLOS, UNA VEZ BORRADO ESTE ELEMENTO SE LE MOSTRARÁ EN PANTALLA LOS 3 DIFERENTES MAZOS CREADOS
+
+; Se muestra el game 5, donde aún no se inicia el juego
+;(display (game->string game5))
+
+; Se muestra el game 14, donde se está jugando
+;(display (game->string game15))
+
+; Se muestra el game 24, donde el juego finalizó
 ;(display (game->string game24))
